@@ -17,10 +17,10 @@ const Note = require('../models/Note');
 exports.getNotes = async (req, res) => {
     try {
         const notes = await Note.find({ userId: req.user.id });
-        res.json(notes);
+        res.status(200).json(notes);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg:'Internal server error'});
     }
 };
 /**
@@ -56,6 +56,10 @@ exports.createNote = async (req, res) => {
     try {
         const { title, content } = req.body;
 
+		if (!title || !content){
+			return res.status(400).json({ msg: 'Title and content are required' });
+		}
+
         const newNote = new Note({
             title,
             content,
@@ -66,7 +70,7 @@ exports.createNote = async (req, res) => {
         res.status(201).json(savedNote);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg: 'Internal server error'});
     }
 };
 
@@ -111,6 +115,10 @@ exports.updateNote = async (req, res) => {
         const { id } = req.params;
         const { title, content } = req.body;
 
+		if (!title || !content){
+			return res.status(400).json({ msg: 'Title and content are required' });
+		}
+
         const updatedNote = await Note.findOneAndUpdate(
             { _id: id, userId: req.user.id },
             { title, content },
@@ -121,10 +129,10 @@ exports.updateNote = async (req, res) => {
             return res.status(404).json({ msg: 'Note not found' });
         }
 
-        res.json(updatedNote);
+        res.status(200).json(updatedNote);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg: 'Internal server error'});
     }
 };
 
@@ -161,10 +169,10 @@ exports.deleteNote = async (req, res) => {
             return res.status(404).json({ msg: 'Note not found' });
         }
 
-        res.json({ msg: 'Note deleted successfully' });
+        res.status(200).json({ msg: 'Note deleted successfully' });
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg:'Internal server error'});
     }
 };
 
@@ -207,9 +215,9 @@ exports.searchNotes = async (req, res) => {
             ],
         });
 
-        res.json(notes);
+        res.status(200).json(notes);
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({msg:'Internal server error'});
     }
 };
