@@ -1,3 +1,4 @@
+const validateUser = require('../middleware/validateUser');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -26,18 +27,29 @@ const User = require('../models/User');
  *         description: Ogiltig begäran
  */
 exports.signup = async (req, res) => {
-    const { username, password } = req.body;
-
     try {
-        let user = await User.findOne({ username });
-        if (user) return res.status(400).json({ msg: 'Username already exists' });
+		// Validera inkommande data
+        const { error } = validateUser(req.body);
+        if (error) {
+            return res.status(400).json({ msg: error.details[0].message });
+        }
 
+	const { username, password } = req.body;
+
+		
+		let user = await User.findOne({ username });
+        if (user) {
+            return res.status(400).json({ msg: 'Username already exists' });
+        }
+		//Hasha lösenordet
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(password, salt);
 
+		//Skapa en ny användare
         user = new User({ username, password: hashedPassword});
         await user.save();
 
+		//Generera JWT-token
         const payload = { user: { id: user.id } };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
