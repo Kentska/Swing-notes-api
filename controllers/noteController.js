@@ -1,4 +1,5 @@
 const Note = require('../models/Note');
+const validateNote = require('../middleware/validateNote');
 
 /**
  * @swagger
@@ -40,11 +41,11 @@ exports.getNotes = async (req, res) => {
  *             properties:
  *               title:
  *                 type: string
- *                 description: Titeln på anteckningen
+ *                 description: Titeln på anteckningen (max 50 tecken)
  *                 example: Min första anteckning
  *               content:
  *                 type: string
- *                 description: Innehållet i anteckningen
+ *                 description: Innehållet i anteckningen (max 300 tecken)
  *                 example: Detta är innehållet i anteckningen.
  *     responses:
  *       201:
@@ -54,23 +55,25 @@ exports.getNotes = async (req, res) => {
  */
 exports.createNote = async (req, res) => {
     try {
-        const { title, content } = req.body;
+        // Validera inkommande data med Joi
+        const { error } = validateNote(req.body);
+        if (error) {
+            return res.status(400).json({ msg: error.details[0].message });
+        }
 
-		if (!title || !content){
-			return res.status(400).json({ msg: 'Title and content are required' });
-		}
+        const { title, content } = req.body;
 
         const newNote = new Note({
             title,
             content,
-            userId: req.user.id,
+            userId: req.user.id, // Sätt userId från req.user.id
         });
 
         const savedNote = await newNote.save();
         res.status(201).json(savedNote);
     } catch (err) {
         console.error(err.message);
-        res.status(500).json({msg: 'Internal server error'});
+        res.status(500).json({ msg: 'Internal server error' });
     }
 };
 
