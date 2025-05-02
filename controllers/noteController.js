@@ -17,10 +17,16 @@ const validateNote = require('../middleware/validateNote');
  */
 exports.getNotes = async (req, res) => {
     try {
+		 // Hämta alla anteckningar från databasen som tillhör den inloggade användaren
+        // Filtrera på userId som matchar req.user.id (hämtas från JWT-tokenen via auth-middleware)
         const notes = await Note.find({ userId: req.user.id });
+
+		// Returnera anteckningarna som en JSON-array med statuskod 200 (OK)
         res.status(200).json(notes);
     } catch (err) {
+		// Logga eventuella fel till serverkonsolen
         console.error(err.message);
+		// Returnera ett felmeddelande med statuskod 500 (intern serverfel)
         res.status(500).json({msg:'Internal server error'});
     }
 };
@@ -56,23 +62,28 @@ exports.getNotes = async (req, res) => {
 exports.createNote = async (req, res) => {
     try {
         // Validera inkommande data med Joi
+		// Kontrollera att "title" och "content" uppfyller de krav som definieras i validateNote
         const { error } = validateNote(req.body);
         if (error) {
+			// Om valideringen misslyckas, returnera ett felmeddelande med statuskod 400 (Bad Request)
             return res.status(400).json({ msg: error.details[0].message });
         }
-
+		// Destrukturera "title" och "content" från requestens body
         const { title, content } = req.body;
-
+		// Skapa en ny anteckning med de inkommande värdena och användarens ID
         const newNote = new Note({
-            title,
-            content,
-            userId: req.user.id, // Sätt userId från req.user.id
+            title, // Title på anteckningen
+            content, // Innehållet i anteckningen
+            userId: req.user.id, // Sätt userId från req.user.id (hämtas från JWT-token via auth-middleware)
         });
-
+		// Spara den nya anteckningen i databasen
         const savedNote = await newNote.save();
+		// Returnera den sparade anteckningen som en JSON-respons med statuskod 201 (Created)
         res.status(201).json(savedNote);
     } catch (err) {
+		// Logga eventuella fel till serverkonsolen
         console.error(err.message);
+		// Returnera ett felmeddelande med statuskod 500 (Internal Server Error)
         res.status(500).json({ msg: 'Internal server error' });
     }
 };
@@ -115,26 +126,32 @@ exports.createNote = async (req, res) => {
  */
 exports.updateNote = async (req, res) => {
     try {
+		 // Hämta anteckningens ID från URL-parametrarna
         const { id } = req.params;
+		// Hämta "title" och "content" från requestens body
         const { title, content } = req.body;
-
+		// Kontrollera att både "title" och "content" finns i requesten
 		if (!title || !content){
+			// Om något av fälten saknas, returnera ett felmeddelande med statuskod 400 (Bad Request)
 			return res.status(400).json({ msg: 'Title and content are required' });
 		}
-
+		 // Uppdatera anteckningen i databasen
         const updatedNote = await Note.findOneAndUpdate(
-            { _id: id, userId: req.user.id },
-            { title, content },
-            { new: true }
+            { _id: id, userId: req.user.id }, // Filtrera på anteckningens ID och användarens ID
+            { title, content }, // Uppdatera titel och innehåll
+            { new: true } // Returnera den uppdaterade anteckningen
         );
-
+		// Kontrollera om anteckningen hittades och uppdaterades
         if (!updatedNote) {
+			// Om ingen anteckning hittades, returnera ett felmeddelande med statuskod 404 (Not Found)
             return res.status(404).json({ msg: 'Note not found' });
         }
-
+		// Returnera den uppdaterade anteckningen som en JSON-respons med statuskod 200 (OK)
         res.status(200).json(updatedNote);
     } catch (err) {
+		// Logga eventuella fel till serverkonsolen
         console.error(err.message);
+		// Returnera ett felmeddelande med statuskod 500 (Internal Server Error)
         res.status(500).json({msg: 'Internal server error'});
     }
 };
@@ -164,17 +181,22 @@ exports.updateNote = async (req, res) => {
  */
 exports.deleteNote = async (req, res) => {
     try {
+		// Hämta anteckningens ID från URL-parametrarna
         const { id } = req.params;
-
+		// Försök att hitta och ta bort anteckningen i databasen
+        // Filtrera på anteckningens ID och användarens ID för att säkerställa att användaren äger anteckningen
         const deletedNote = await Note.findOneAndDelete({ _id: id, userId: req.user.id });
-
+		// Kontrollera om anteckningen hittades och togs bort
         if (!deletedNote) {
+			// Om ingen anteckning hittades, returnera ett felmeddelande med statuskod 404 (Not Found)
             return res.status(404).json({ msg: 'Note not found' });
         }
-
+		// Om anteckningen togs bort framgångsrikt, returnera ett meddelande med statuskod 200 (OK)
         res.status(200).json({ msg: 'Note deleted successfully' });
     } catch (err) {
+		// Logga eventuella fel till serverkonsolen
         console.error(err.message);
+		// Returnera ett felmeddelande med statuskod 500 (Internal Server Error)
         res.status(500).json({msg:'Internal server error'});
     }
 };
@@ -204,20 +226,24 @@ exports.deleteNote = async (req, res) => {
  */
 exports.searchNotes = async (req, res) => {
     try {
+		// Hämta söksträngen från query-parametern i URL:en
         const { query } = req.query;
-
+		// Kontrollera att söksträngen finns
         if (!query) {
+			// Om söksträngen saknas, returnera ett felmeddelande med statuskod 400 (Bad Request)
             return res.status(400).json({ msg: 'Query parameter is required' });
         }
-
+		// Sök efter anteckningar i databasen
         const notes = await Note.find({
-            userId: req.user.id,
-                 title: { $regex: query, $options: 'i' },
+            userId: req.user.id, // Filtrera på användarens ID för att endast hämta den inloggade användarens anteckningar
+                 title: { $regex: query, $options: 'i' }, // Sök i titel med regex (case-insensitive)
         });
-
+		// Returnera de matchande anteckningarna som en JSON-array med statuskod 200 (OK)
         res.status(200).json(notes);
     } catch (err) {
+		// Logga eventuella fel till serverkonsolen
         console.error(err.message);
+		// Returnera ett felmeddelande med statuskod 500 (Internal Server Error)
         res.status(500).json({msg:'Internal server error'});
     }
 };
