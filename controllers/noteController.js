@@ -212,10 +212,7 @@ exports.searchNotes = async (req, res) => {
 
         const notes = await Note.find({
             userId: req.user.id,
-            $or: [
-                { title: { $regex: query, $options: 'i' } },
-                { content: { $regex: query, $options: 'i' } },
-            ],
+                 title: { $regex: query, $options: 'i' },
         });
 
         res.status(200).json(notes);

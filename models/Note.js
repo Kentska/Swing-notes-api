@@ -12,5 +12,9 @@ NoteSchema.pre('save', function(next) {
 	this.modifiedAt = Date.now();
 	next();
 });
+NoteSchema.pre('findOneAndUpdate', function (next) {
+    this.set({ modifiedAt: Date.now() });
+    next();
+});
 
 module.exports = mongoose.model('Note', NoteSchema);
