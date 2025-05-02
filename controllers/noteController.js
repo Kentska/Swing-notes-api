@@ -183,7 +183,7 @@ exports.deleteNote = async (req, res) => {
  * @swagger
  * /api/notes/search:
  *   get:
- *     summary: Sök efter anteckningar baserat på titel eller innehåll
+ *     summary: Sök efter anteckningar baserat på titel
  *     tags: [Notes]
  *     security:
  *       - bearerAuth: []
