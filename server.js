@@ -18,5 +18,10 @@ app.use('/api/user', userRoutes);
 
 setupSwagger(app);
 
+//Redirect root URL to Swagger doc.
+app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
