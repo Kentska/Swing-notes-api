@@ -1,7 +1,20 @@
 const validateUser = require('../middleware/validateUser');
+// Importerar `validateUser`, en middleware-funktion som används för att validera inkommande data
+// (t.ex. användarnamn och lösenord) med hjälp av Joi. Detta säkerställer att endast korrekt formaterad
+// data hanteras i applikationen.
+
 const bcrypt = require('bcrypt');
+// Importerar `bcrypt`, ett bibliotek som används för att hash:a lösenord och jämföra hashade lösenord.
+// Detta används för att säkerställa att lösenord lagras säkert i databasen.
+
 const jwt = require('jsonwebtoken');
+// Importerar `jsonwebtoken`, ett bibliotek som används för att skapa och verifiera JWT-tokens.
+// JWT-tokens används för autentisering och auktorisering i applikationen.
+
 const User = require('../models/User');
+// Importerar Mongoose-modellen `User` från filen `../models/User`.
+// Modellen används för att interagera med "users"-kollektionen i databasen, t.ex. för att skapa,
+// läsa och söka efter användare.
 
 /**
  * @swagger

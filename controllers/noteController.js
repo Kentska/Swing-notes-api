@@ -1,5 +1,11 @@
 const Note = require('../models/Note');
+// Importerar Mongoose-modellen `Note` från filen `../models/Note`.
+// Modellen används för att interagera med "notes"-kollektionen i databasen.
+// Den möjliggör CRUD-operationer (Create, Read, Update, Delete) för anteckningar.
 const validateNote = require('../middleware/validateNote');
+// Importerar valideringsfunktionen `validateNote` från filen `../middleware/validateNote`.
+// Funktionen används för att validera inkommande data (t.ex. titel och innehåll) innan den sparas i databasen.
+// Detta säkerställer att endast korrekt formaterad data hanteras av applikationen.
 
 /**
  * @swagger
